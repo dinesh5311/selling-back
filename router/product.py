@@ -7,6 +7,7 @@ from .auth import get_current_user
 from models import Category, Product
 from sqlalchemy import func
 
+
 router = APIRouter(
     prefix='/product',
     tags=["product"]
