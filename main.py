@@ -5,7 +5,9 @@ from router import auth, todos, category, product
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 origins = [
-    "http://localhost:4200",  # Include other origins as needed
+    "http://localhost:4200",
+    "https://selling-six.vercel.app"
+    # Include other origins as needed
 ]
 
 app.add_middleware(
