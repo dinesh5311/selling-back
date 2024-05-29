@@ -62,7 +62,7 @@ def create_access_token(email: str, user_id: str, expire_delta: timedelta):
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth_bearer)]):
+async def get_current_user(token: Annotated[str, Depends(oauth_bearer)], db: db_dependency):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         email: str = payload.get('sub')
@@ -70,7 +70,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth_bearer)]):
         if email is None or user_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="Could Not validate user")
-        return {"email": email, "user_id": user_id}
+        user = db.query(Users).filter(Users.id == user_id).first()
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="Could not validate user")
+        return user
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Could Not validate user")
@@ -117,3 +121,6 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
                             detail="Could Not validate user")
     token = create_access_token(user.email, user.id, timedelta(minutes=20))
     return {"access_token": token, "token_type": "bearer"}
+
+
+
